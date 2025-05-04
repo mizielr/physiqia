@@ -11,6 +11,8 @@ namespace Physiqia.TheLab
         public const byte ACC_TYPE_GROWING = 3;
 
         [Header("Graphs")]
+        public GraphChartBase mainGraph;
+        public GraphChartBase accelerationGraph;
         public GraphChartBase posGraph;
         public GraphChartBase velocityGraph;
 
@@ -20,7 +22,11 @@ namespace Physiqia.TheLab
         public float initialVelocity;
         public byte accType = Kinematics1DGraphController.ACC_TYPE_CONST;
 
+        [Header("Mode")]
+        public bool isTripleGraphMode = true;
+
         [Header("Categories")]
+        private string zeroLineCategory = "ZeroLine";
         private string accelerationCategory = "Acceleration";
         private string positionCategory = "Position";
         private string velocityCategory = "Velocity";
@@ -28,7 +34,10 @@ namespace Physiqia.TheLab
         /// <summary>
         /// 
         /// </summary>
-        void Start() { }
+        void Start()
+        {
+            accelerationGraph = GetComponent<GraphChartBase>();
+        }
 
         /// <summary>
         /// 
@@ -42,30 +51,7 @@ namespace Physiqia.TheLab
         /// </summary>
         public void RunSimulation()
         {
-            GraphChartBase accelerationGraph = GetComponent<GraphChartBase>();
-
-            if (accelerationGraph == null && posGraph && velocityGraph) return;
-
-            if (accelerationGraph)
-            {
-                accelerationGraph.Scrollable = false;
-                accelerationGraph.DataSource.StartBatch();
-                accelerationGraph.DataSource.ClearCategory(accelerationCategory);
-            }
-
-            if (posGraph)
-            {
-                posGraph.Scrollable = false;
-                posGraph.DataSource.StartBatch();
-                posGraph.DataSource.ClearCategory(positionCategory);
-            }
-
-            if (velocityGraph)
-            {
-                velocityGraph.Scrollable = false;
-                velocityGraph.DataSource.StartBatch();
-                velocityGraph.DataSource.ClearCategory(velocityCategory);
-            }
+            InitGraphs();
 
             float timeStep = 0.1f;
             float time = 0f;
@@ -79,26 +65,28 @@ namespace Physiqia.TheLab
                 velocity += accelValue * timeStep;
                 position += velocity * timeStep;
 
-                if (accelerationGraph)
-                    accelerationGraph.DataSource.AddPointToCategory(accelerationCategory, time, accelValue);
+                if (isTripleGraphMode)
+                {
+                    if (accelerationGraph)
+                        accelerationGraph.DataSource.AddPointToCategory(accelerationCategory, time, accelValue);
 
-                if (posGraph)
-                    posGraph.DataSource.AddPointToCategory(positionCategory, time, position);
+                    if (posGraph)
+                        posGraph.DataSource.AddPointToCategory(positionCategory, time, position);
 
-                if (velocityGraph)
-                    velocityGraph.DataSource.AddPointToCategory(velocityCategory, time, velocity);
+                    if (velocityGraph)
+                        velocityGraph.DataSource.AddPointToCategory(velocityCategory, time, velocity);
+                }
+                else
+                {
+                    mainGraph.DataSource.AddPointToCategory(accelerationCategory, time, accelValue);
+                    mainGraph.DataSource.AddPointToCategory(positionCategory, time, position);
+                    mainGraph.DataSource.AddPointToCategory(velocityCategory, time, velocity);
+                }
 
                 time += timeStep;
             }
 
-            if (accelerationGraph)
-                accelerationGraph.DataSource.EndBatch();
-
-            if (posGraph)
-                posGraph.DataSource.EndBatch();
-
-            if (velocityGraph)
-                velocityGraph.DataSource.EndBatch();
+            EndBatchGraphs();
         }
 
         /// <summary>
@@ -117,17 +105,6 @@ namespace Physiqia.TheLab
                 default:
                     return acceleration;
             }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="time"></param>
-        /// <param name="accelValue"></param>
-        /// <returns></returns>
-        private float CalculatePosition(float time, float accelValue)
-        {
-            return (initialVelocity * time) + (0.5f * accelValue * time * time);
         }
 
         /// <summary>
@@ -166,10 +143,72 @@ namespace Physiqia.TheLab
             duration = value;
         }
 
-        public void MultipleGraphMode(bool value)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        public void SetGraphMode(bool value)
         {
-            // TODO: IMPLEMENTE 1/3 GRAPHS SWITCH
+            isTripleGraphMode = value;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void InitGraphs()
+        {
+            if (!isTripleGraphMode)
+            {
+                mainGraph.Scrollable = false;
+                mainGraph.DataSource.StartBatch();
+                mainGraph.DataSource.ClearCategory(accelerationCategory);
+                mainGraph.DataSource.ClearCategory(positionCategory);
+                mainGraph.DataSource.ClearCategory(velocityCategory);
+
+                return;
+            }
+
+            if (accelerationGraph)
+            {
+                accelerationGraph.Scrollable = false;
+                accelerationGraph.DataSource.StartBatch();
+                accelerationGraph.DataSource.ClearCategory(accelerationCategory);
+            }
+
+            if (posGraph)
+            {
+                posGraph.Scrollable = false;
+                posGraph.DataSource.StartBatch();
+                posGraph.DataSource.ClearCategory(positionCategory);
+            }
+
+            if (velocityGraph)
+            {
+                velocityGraph.Scrollable = false;
+                velocityGraph.DataSource.StartBatch();
+                velocityGraph.DataSource.ClearCategory(velocityCategory);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void EndBatchGraphs()
+        {
+            if (!isTripleGraphMode)
+            {
+                mainGraph.DataSource.EndBatch();
+                return;
+            }
+
+            if (accelerationGraph)
+                accelerationGraph.DataSource.EndBatch();
+
+            if (posGraph)
+                posGraph.DataSource.EndBatch();
+
+            if (velocityGraph)
+                velocityGraph.DataSource.EndBatch();
         }
     }
 }
-
