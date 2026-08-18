@@ -1,21 +1,31 @@
 using Michsky.UI.Reach;
-using Physiqia.PTable;
+using Physiqia.TheLab.PTable;
 using TMPro;
-using UnityEditor.Localization.Plugins.XLIFF.V12;
 using UnityEngine;
 
 namespace Physiqia.TheLab
 {
     public class PeriodicTableController : MonoBehaviour
     {
+        [Header("View Mode")]
         public byte viewMode;
+
+        [Header("Main Canvases")]
         public GameObject tablesCanvas;
         public GameObject elementsTable;
         public GameObject particlesTable;
         public GameObject atomCanvas;
+
+        [Header("Table Buttons")]
         public ButtonManager ElementsTableButton;
         public ButtonManager ParticlesTableButton;
 
+        [Header("Modal Texts")]
+        public TMP_Text modalTextSymbol;
+        public TMP_Text modalTextAtomicNumber;
+        public TMP_Text modalTextAtomicMass;
+
+        [Header("Element Groups")]
         /// <summary>
         /// 1
         /// </summary>
@@ -66,45 +76,74 @@ namespace Physiqia.TheLab
         /// </summary>
         public CanvasGroup[] groupNobleGas;
 
+        [Header("Info Panels")]
         public GameObject atomInfoPanel;
         public GameObject particleInfoPanel;
 
+        [Header("Current Atom Data")]
         public string currentAtom;
         public IPTABLEDATA_Element currentAtomData;
 
+        [Header("Titles")]
         public TMP_Text atomInfo_Title;
         public TMP_Text atomView_Title;
 
+        [Header("Factory")]
         private PTABLEDATA_Factory pTABLEDATA_Factory;
+
+        [Header("Atom View Buttons")]
         public ButtonManager atomViewClassicButton;
         public ButtonManager atomViewQuanticButton;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         void Start()
         {
+            DeepWinter.SavePosition(MenuCameraPositionEnum.THE_LAB);
+
+            InitializeController();
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        private void InitializeController()
+        {
             viewMode = 1;
             pTABLEDATA_Factory = new PTABLEDATA_Factory();
-            _hideCanvas();
+            HideCanvas();
+
             if (viewMode == 1)
-            {
-                DisplayPeriodicTable();
-                ShowElementsTable();
-            }
+                SetupPeriodicTableView();
             else
-            {
-                DisplayAtom();
-            }
+                SetupAtomView();
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        private void SetupPeriodicTableView()
+        {
+            DisplayPeriodicTable();
+            ShowElementsTable();
         }
 
         /// <summary>
         /// 
         /// </summary>
+        private void SetupAtomView()
+        {
+            DisplayAtom();
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
         void Update() { }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="atom"></param>
         public void SetAtom(string atom)
@@ -115,7 +154,7 @@ namespace Physiqia.TheLab
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="p"></param>
         public void ViewParticle(string p)
@@ -125,7 +164,7 @@ namespace Physiqia.TheLab
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void ShowElementsTable()
         {
@@ -139,7 +178,7 @@ namespace Physiqia.TheLab
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void ShowParticlesTable()
         {
@@ -150,10 +189,16 @@ namespace Physiqia.TheLab
             ParticlesTableButton.Interactable(false);
 
             ElementsTableButton.UnhihglightButton();
+
+            ParticlesTableButton.UpdateState();
+            ElementsTableButton.UpdateState();
+
+            ParticlesTableButton.UpdateUI();
+            ElementsTableButton.UpdateUI();
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void CloseAtomInfoPanel()
         {
@@ -161,7 +206,7 @@ namespace Physiqia.TheLab
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void DisplayAtom()
         {
@@ -171,7 +216,7 @@ namespace Physiqia.TheLab
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private void ActivateAtomCanvas()
         {
@@ -180,7 +225,7 @@ namespace Physiqia.TheLab
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private void ConfigureAtomView()
         {
@@ -188,7 +233,7 @@ namespace Physiqia.TheLab
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private void GenerateAtomFromData()
         {
@@ -200,7 +245,7 @@ namespace Physiqia.TheLab
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void DisplayPeriodicTable()
         {
@@ -209,7 +254,7 @@ namespace Physiqia.TheLab
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void CloseAtomView()
         {
@@ -221,7 +266,7 @@ namespace Physiqia.TheLab
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void HighlighAll()
         {
@@ -236,7 +281,7 @@ namespace Physiqia.TheLab
                 groupMetalloids,
                 groupNonmetals,
                 groupHalogens,
-                groupNobleGas
+                groupNobleGas,
             };
 
             foreach (var groupArray in allGroups)
@@ -249,7 +294,7 @@ namespace Physiqia.TheLab
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="idx"></param>
         public void HighlighGroup(int idx)
@@ -268,7 +313,7 @@ namespace Physiqia.TheLab
                 8 => groupNonmetals,
                 9 => groupHalogens,
                 10 => groupNobleGas,
-                _ => null
+                _ => null,
             };
 
             if (targetGroup != null)
@@ -281,7 +326,7 @@ namespace Physiqia.TheLab
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private void HideGroups()
         {
@@ -296,7 +341,7 @@ namespace Physiqia.TheLab
                 groupMetalloids,
                 groupNonmetals,
                 groupHalogens,
-                groupNobleGas
+                groupNobleGas,
             };
 
             foreach (var groupArray in allGroups)
@@ -309,16 +354,16 @@ namespace Physiqia.TheLab
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        private void _hideCanvas()
+        private void HideCanvas()
         {
             tablesCanvas.SetActive(false);
             atomCanvas.SetActive(false);
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private void LoadAtomData()
         {
@@ -331,10 +376,14 @@ namespace Physiqia.TheLab
             }
             atomInfo_Title.text = ptableElement.Name;
             atomView_Title.text = ptableElement.Name;
+
+            modalTextSymbol.text = ptableElement.Symbol;
+            modalTextAtomicNumber.text = ptableElement.AtomicNumber.ToString();
+            modalTextAtomicMass.text = ptableElement.AtomicMass.ToString();
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private void LoadParticleData()
         {
@@ -342,14 +391,16 @@ namespace Physiqia.TheLab
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
         private string getPTableElementClass(string symbol)
         {
-            return "Physiqia.TheLab.PTable.PTABLEDATA_" + symbol.ToUpper() + "_L" + LangEnum.GetEnumString(LangEnum.English).ToUpper();
+            return "Physiqia.TheLab.PTable.PTABLEDATA_"
+                + symbol.ToUpper()
+                + "_L"
+                + LangEnum.GetEnumString(LangEnum.English).ToUpper();
         }
     }
-
 }
